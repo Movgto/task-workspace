@@ -1,0 +1,31 @@
+<mat-card class="mx-auto w-full max-w-4xl p-4">
+    <mat-card-title>Register an Account</mat-card-title>
+    <mat-card-content>
+        <form [formGroup]="registerForm" class="flex flex-col" (ngSubmit)="onSubmit()">
+            <mat-form-field>
+                <mat-label>Your First Name:</mat-label>
+                <input matInput type="text" id="firstName" name="firstName" formControlName="firstName" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Your Last Name:</mat-label>
+                <input matInput type="text" id="lastName" name="lastName" formControlName="lastName" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Email:</mat-label>
+                <input matInput type="email" id="email" name="email" formControlName="email" />
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Password:</mat-label>
+                <input matInput type="password" id="password" name="password" formControlName="password" />
+            </mat-form-field>
+
+        </form>
+    </mat-card-content>
+    <mat-card-actions>
+        <button type="submit" matButton >Register</button>
+        <button routerLink="/auth/login" matButton >Already have an account? Login</button>
+    </mat-card-actions>
+</mat-card>
