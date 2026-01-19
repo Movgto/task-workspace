@@ -4,5 +4,5 @@ import type { LoginUserDto } from "./dto/login-user.dto.js";
 
 export interface IAuthService {
     registerUser: (userDto: UserDto) => Promise<User>
-    loginUser: (loginDto: LoginUserDto) => Promise<any>
+    loginUser: (loginDto: LoginUserDto) => Promise<{token: string, refreshToken: string, user: any}>
 }

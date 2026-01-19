@@ -43,12 +43,31 @@ class AuthService implements IAuthService {
             { expiresIn: '5h' }
         )
 
+        const refreshToken = jwt.sign(
+            { userId: user.id, email: user.email },
+            env('JWT_SECRET'),
+            { expiresIn: '7d' }
+        )
+
         const { password, createdAt, updatedAt, ...rest } = user;
 
         return {
+            refreshToken,
             token,
             user: rest
         }
+    }
+
+    async refreshToken(token: string) {
+        const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as any;
+
+        const accessToken = jwt.sign(
+            { userId: payload.userId },
+            process.env.JWT_REFRESH_SECRET!,
+            { expiresIn: '15m'}
+        );
+
+        return { accessToken };
     }
 }
 

@@ -6,6 +6,7 @@ import { environment } from "src/environments/environment";
 @Injectable({providedIn: 'root'})
 export class AuthService {
     public currentUser = signal<any|null>(null);
+    private accessToken = signal<string|null>(null);
 
     constructor(private http: HttpClient) {
         const savedUser = localStorage.getItem('user');        
@@ -18,20 +19,31 @@ export class AuthService {
     }
 
     login(user: any) {
-        const obs = this.http.post<any>(environment.apiUrl + '/api/auth/login', user).pipe(
-            tap(res => {
-                localStorage.setItem('user', JSON.stringify(res.user));
-                localStorage.setItem('token', res.token);
-
-                this.currentUser.set(res.user);
+        return this.http.post<any>(environment.apiUrl + '/api/auth/login', user, { withCredentials: true }).pipe(
+            tap(res => {                
+                this.currentUser.set(res.user);              
             })
-        );
-        
-        return obs;
+        );              
     }
 
     logout() {
         localStorage.clear();
         this.currentUser.set(null);
+    }
+
+    isAuthenticated() {
+        return !!this.currentUser() && !!this.accessToken();
+    }
+
+    getAccessToken() { return this.accessToken(); }    
+
+    refreshAccessToken() {
+        return this.http.post<{ accessToken: string }>(
+            environment.apiUrl + '/api/auth/refresh',
+            {},
+            { withCredentials: true }
+        ).pipe(
+            tap(res => this.accessToken.set(res.accessToken))
+        );
     }
 }
