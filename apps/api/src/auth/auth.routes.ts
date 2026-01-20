@@ -6,6 +6,7 @@ import { prisma } from '../db/prisma.js';
 import validateSchema from '../shared/middleware/schema.validator.js';
 import { userDtoSchema } from './dto/create-user.dto.js';
 import { loginUserSchema } from './dto/login-user.dto.js';
+import jwtAuthMiddleware from '../shared/middleware/jwt-auth.middleware.js';
 
 const router = Router();
 
@@ -21,6 +22,15 @@ router.post('/register',
 router.post('/login',
     validateSchema(loginUserSchema),
     authController.login
+)
+
+router.post('/refresh',
+    authController.refreshToken
+)
+
+router.get('/me', 
+    jwtAuthMiddleware,
+    authController.getCurrentUser
 )
 
 export default router;

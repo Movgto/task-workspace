@@ -58,6 +58,17 @@ class AuthController {
         }
     }
 
+    // This method should be intercepter by a middleware for the user object to be present in the request.
+    async getCurrentUser(req: Request, res: Response) {
+        const user = req.user!;
+
+        const { password, ...rest } = user;
+
+        return res.status(200).json({
+            user: rest
+        })
+    }
+
     async refreshToken(req: Request, res: Response) {
         try {
             const refreshToken = req.cookies.refreshToken;
@@ -66,9 +77,27 @@ class AuthController {
                 error: 'No refresh token'
             })
 
-            // const result = this.authService.
+            const result = this.authService.refreshToken(refreshToken);
+
+            return res.status(200).json(result)
+
         } catch (error) {
-            
+            // Handle JWT errors generically
+            if (error instanceof Error && error.name === 'JsonWebTokenError') {
+                return res.status(401).json({
+                    error: 'Invalid token'
+                })
+            }
+
+            if (error instanceof Error && error.name === 'TokenExpiredError') {
+                return res.status(401).json({
+                    error: 'Token expired'
+                })
+            }
+
+            return res.status(401).json({
+                error: 'Unauthorized'
+            })
         }
     }
 }

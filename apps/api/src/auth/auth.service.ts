@@ -8,6 +8,7 @@ import { InvalidCredentialsError, UserNotFountError } from "./exceptions/index.j
 
 import jwt from 'jsonwebtoken'
 import { env } from "prisma/config";
+import { JwtUtils } from "../shared/utils/jwt.utils.js";
 
 class AuthService implements IAuthService {
     constructor(private passwordEncoder: IPasswordEncoder, private prismaClient: typeof prisma) {
@@ -38,14 +39,14 @@ class AuthService implements IAuthService {
         if (!valid) throw InvalidCredentialsError;
 
         const token = jwt.sign(
-            { userId: user.id, email: user.email },
+            { userId: user.id },
             env('JWT_SECRET'),
             { expiresIn: '5h' }
         )
 
         const refreshToken = jwt.sign(
-            { userId: user.id, email: user.email },
-            env('JWT_SECRET'),
+            { userId: user.id },
+            env('JWT_REFRESH_SECRET'),
             { expiresIn: '7d' }
         )
 
@@ -58,16 +59,22 @@ class AuthService implements IAuthService {
         }
     }
 
-    async refreshToken(token: string) {
-        const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as any;
+    refreshToken(token: string) {
+        const payload = JwtUtils.verify(token) as any;
 
         const accessToken = jwt.sign(
             { userId: payload.userId },
-            process.env.JWT_REFRESH_SECRET!,
-            { expiresIn: '15m'}
+            process.env.JWT_SECRET!,
+            { expiresIn: '15m' }
         );
 
-        return { accessToken };
+        const refreshToken = jwt.sign(
+            { userId: payload.userId },
+            process.env.JWT_REFRESH_SECRET!,
+            { expiresIn: '7d'}
+        )
+
+        return { accessToken, refreshToken };
     }
 }
 
